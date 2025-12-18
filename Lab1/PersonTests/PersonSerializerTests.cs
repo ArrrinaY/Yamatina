@@ -17,10 +17,10 @@ namespace PersonTests
             _serializer = new PersonSerializer();
             _testPerson = new Person
             {
-                FirstName = "Тест",
-                LastName = "Тестов",
-                Age = 30,
-                Email = "test@example.com",
+                FirstName = "Диана",
+                LastName = "Хотеева",
+                Age = 18,
+                Email = "diana@example.com",
                 PhoneNumber = "+79990000000",
                 Password = "secret",
                 BirthDate = new System.DateTime(1993, 1, 1)
@@ -45,20 +45,20 @@ namespace PersonTests
         public void DeserializeFromJson_ReturnsValidPerson()
         {
             string json = @"{
-                ""FirstName"": ""Иван"",
-                ""LastName"": ""Иванов"",
-                ""Age"": 25,
-                ""Email"": ""ivan@example.com"",
+                ""FirstName"": ""Соня"",
+                ""LastName"": ""Мурина"",
+                ""Age"": 18,
+                ""Email"": ""sonya@example.com"",
                 ""personId"": ""test-id"",
-                ""_birthDate"": ""1998-05-15T00:00:00"",
+                ""_birthDate"": ""2007-09-06T00:00:00"",
                 ""phone"": ""+79991234567""
             }";
 
             Person person = _serializer.DeserializeFromJson(json);
 
-            Assert.AreEqual("Иван", person.FirstName);
-            Assert.AreEqual("Иванов", person.LastName);
-            Assert.AreEqual("ivan@example.com", person.Email);
+            Assert.AreEqual("Соня", person.FirstName);
+            Assert.AreEqual("Мурина", person.LastName);
+            Assert.AreEqual("sonya@example.com", person.Email);
             Assert.AreEqual("+79991234567", person.PhoneNumber);
         }
         
