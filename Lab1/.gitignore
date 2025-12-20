@@ -1,0 +1,6 @@
+test_*.json
+person*.json
+people.json
+test_file.txt
+test.txt
+*.json~   # резервные копии JSON
