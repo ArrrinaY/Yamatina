@@ -1,0 +1,72 @@
+databaseChangeLog:
+  - changeSet:
+      id: 001
+      author: admin
+      changes:
+        - sqlFile:
+            path: migrations/001_create_users_table.sql
+            relativeToChangelogFile: true
+
+  - changeSet:
+      id: 002
+      author: admin
+      changes:
+        - sqlFile:
+            path: migrations/002_create_companies_table.sql
+            relativeToChangelogFile: true
+
+  - changeSet:
+      id: 003
+      author: admin
+      changes:
+        - sqlFile:
+            path: migrations/003_create_candidates_table.sql
+            relativeToChangelogFile: true
+
+  - changeSet:
+      id: 004
+      author: admin
+      changes:
+        - sqlFile:
+            path: migrations/004_create_tags_table.sql
+            relativeToChangelogFile: true
+
+  - changeSet:
+      id: 005
+      author: admin
+      changes:
+        - sqlFile:
+            path: migrations/005_create_vacancies_table.sql
+            relativeToChangelogFile: true
+
+  - changeSet:
+      id: 006
+      author: admin
+      changes:
+        - sqlFile:
+            path: migrations/006_create_applications_table.sql
+            relativeToChangelogFile: true
+
+  - changeSet:
+      id: 007
+      author: admin
+      changes:
+        - sqlFile:
+            path: migrations/007_create_vacancy_tags_table.sql
+            relativeToChangelogFile: true
+
+  - changeSet:
+      id: 008
+      author: admin
+      changes:
+        - sqlFile:
+            path: migrations/008_insert_seed_data.sql
+            relativeToChangelogFile: true
+
+  - changeSet:
+      id: 009
+      author: admin
+      changes:
+        - sqlFile:
+            path: migrations/009_create_api_keys_table.sql
+            relativeToChangelogFile: true
