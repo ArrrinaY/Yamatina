@@ -110,7 +110,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         modelBuilder.Entity<Application>(entity =>
         {
             entity.ToTable("applications");
-            entity.HasKey(a => a.Id);
+            entity.HasKey(a => new { a.Id, a.AppliedDate });
             entity.Property(a => a.Id).HasColumnName("id");
             entity.Property(a => a.CandidateId).HasColumnName("candidate_id");
             entity.Property(a => a.VacancyId).HasColumnName("vacancy_id");

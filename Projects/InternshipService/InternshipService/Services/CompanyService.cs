@@ -9,7 +9,11 @@ using System.IdentityModel.Tokens.Jwt;
 
 namespace InternshipService.Services;
 
-public class CompanyService(ICompanyRepository companyRepository, IMapper mapper, ICurrentUser currentUser) : ICompanyService
+public class CompanyService(
+    ICompanyRepository companyRepository,
+    IVacancyRepository vacancyRepository,
+    IMapper mapper,
+    ICurrentUser currentUser) : ICompanyService
 {
     public async Task<List<CompanyResponseModel>> GetAsync()
     {
@@ -31,6 +35,22 @@ public class CompanyService(ICompanyRepository companyRepository, IMapper mapper
         
         var company = await companyRepository.GetByIdAsync(id);
         return company is not null ? mapper.Map<CompanyResponseModel>(company) : null;
+    }
+
+    public async Task<List<VacancyResponseModel>> GetVacanciesAsync(int companyId)
+    {
+        if (!currentUser.UserPermissions.Contains(Permissions.Read))
+        {
+            throw new SecurityTokenException("Authorization failed");
+        }
+
+        if (await companyRepository.GetByIdAsync(companyId) is null)
+        {
+            throw new KeyNotFoundException($"Company with ID {companyId} not found");
+        }
+
+        var vacancies = await vacancyRepository.GetByCompanyIdAsync(companyId);
+        return mapper.Map<List<VacancyResponseModel>>(vacancies);
     }
 
     public async Task<CompanyResponseModel> CreateAsync(CompanyRequestModel companyRequestModel)

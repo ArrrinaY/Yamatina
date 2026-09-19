@@ -1,0 +1,143 @@
+﻿                                                     QUERY PLAN                                                      
+---------------------------------------------------------------------------------------------------------------------
+ Gather  (cost=1000.00..17037.43 rows=11 width=53) (actual time=3.699..24.166 rows=11 loops=1)
+   Workers Planned: 2
+   Workers Launched: 2
+   ->  Parallel Seq Scan on orders  (cost=0.00..16036.33 rows=5 width=53) (actual time=4.488..18.262 rows=4 loops=3)
+         Filter: (user_id = 123)
+         Rows Removed by Filter: 333330
+ Planning Time: 0.222 ms
+ Execution Time: 24.226 ms
+(8 rows)
+
+CREATE INDEX
+ANALYZE
+                                                         QUERY PLAN                                                          
+-----------------------------------------------------------------------------------------------------------------------------
+ Bitmap Heap Scan on orders  (cost=4.51..47.60 rows=11 width=53) (actual time=0.082..0.108 rows=11 loops=1)
+   Recheck Cond: (user_id = 123)
+   Heap Blocks: exact=11
+   ->  Bitmap Index Scan on idx_orders_user_id  (cost=0.00..4.51 rows=11 width=0) (actual time=0.072..0.073 rows=11 loops=1)
+         Index Cond: (user_id = 123)
+ Planning Time: 0.214 ms
+ Execution Time: 0.182 ms
+(7 rows)
+
+CREATE INDEX
+ANALYZE
+                                                              QUERY PLAN                                                               
+---------------------------------------------------------------------------------------------------------------------------------------
+ Bitmap Heap Scan on orders  (cost=2802.32..16762.41 rows=250567 width=53) (actual time=6.103..36.684 rows=249806 loops=1)
+   Recheck Cond: ((status)::text = 'PAID'::text)
+   Heap Blocks: exact=10828
+   ->  Bitmap Index Scan on idx_orders_status  (cost=0.00..2739.68 rows=250567 width=0) (actual time=4.848..4.849 rows=249806 loops=1)
+         Index Cond: ((status)::text = 'PAID'::text)
+ Planning Time: 0.149 ms
+ Execution Time: 42.204 ms
+(7 rows)
+
+                                                              QUERY PLAN                                                               
+---------------------------------------------------------------------------------------------------------------------------------------
+ Bitmap Heap Scan on orders  (cost=2779.59..16715.93 rows=248667 width=53) (actual time=6.846..37.270 rows=250153 loops=1)
+   Recheck Cond: ((status)::text = 'NEW'::text)
+   Heap Blocks: exact=10828
+   ->  Bitmap Index Scan on idx_orders_status  (cost=0.00..2717.43 rows=248667 width=0) (actual time=5.814..5.843 rows=250153 loops=1)
+         Index Cond: ((status)::text = 'NEW'::text)
+ Planning Time: 0.100 ms
+ Execution Time: 42.859 ms
+(7 rows)
+
+  status   | count  
+-----------+--------
+ CANCELLED | 249684
+ DELIVERED | 250357
+ NEW       | 250153
+ PAID      | 249806
+(4 rows)
+
+                                                        QUERY PLAN                                                         
+---------------------------------------------------------------------------------------------------------------------------
+ Gather  (cost=1000.00..19972.17 rows=8525 width=53) (actual time=0.574..61.616 rows=9700 loops=1)
+   Workers Planned: 2
+   Workers Launched: 2
+   ->  Parallel Seq Scan on orders  (cost=0.00..18119.67 rows=3552 width=53) (actual time=0.096..55.405 rows=3233 loops=3)
+         Filter: (created_at > (now() - '7 days'::interval))
+         Rows Removed by Filter: 330100
+ Planning Time: 0.225 ms
+ Execution Time: 61.966 ms
+(8 rows)
+
+CREATE INDEX
+ANALYZE
+                                                              QUERY PLAN                                                              
+--------------------------------------------------------------------------------------------------------------------------------------
+ Bitmap Heap Scan on orders  (cost=188.73..11381.14 rows=9845 width=53) (actual time=1.718..7.138 rows=9700 loops=1)
+   Recheck Cond: (created_at > (now() - '7 days'::interval))
+   Heap Blocks: exact=6484
+   ->  Bitmap Index Scan on idx_orders_created_at  (cost=0.00..186.27 rows=9845 width=0) (actual time=1.091..1.091 rows=9700 loops=1)
+         Index Cond: (created_at > (now() - '7 days'::interval))
+ Planning Time: 0.286 ms
+ Execution Time: 7.357 ms
+(7 rows)
+
+CREATE INDEX
+                                                           QUERY PLAN                                                            
+---------------------------------------------------------------------------------------------------------------------------------
+ Index Scan using idx_orders_user_status on orders  (cost=0.42..16.48 rows=3 width=53) (actual time=0.032..0.040 rows=4 loops=1)
+   Index Cond: ((user_id = 123) AND ((status)::text = 'PAID'::text))
+ Planning Time: 0.208 ms
+ Execution Time: 0.054 ms
+(4 rows)
+
+                                                                 QUERY PLAN                                                                  
+---------------------------------------------------------------------------------------------------------------------------------------------
+ Limit  (cost=47.79..47.81 rows=11 width=53) (actual time=0.049..0.051 rows=11 loops=1)
+   ->  Sort  (cost=47.79..47.81 rows=11 width=53) (actual time=0.048..0.049 rows=11 loops=1)
+         Sort Key: created_at DESC
+         Sort Method: quicksort  Memory: 26kB
+         ->  Bitmap Heap Scan on orders  (cost=4.51..47.60 rows=11 width=53) (actual time=0.017..0.039 rows=11 loops=1)
+               Recheck Cond: (user_id = 123)
+               Heap Blocks: exact=11
+               ->  Bitmap Index Scan on idx_orders_user_status  (cost=0.00..4.51 rows=11 width=0) (actual time=0.009..0.009 rows=11 loops=1)
+                     Index Cond: (user_id = 123)
+ Planning Time: 0.110 ms
+ Execution Time: 0.067 ms
+(11 rows)
+
+CREATE INDEX
+                                                                      QUERY PLAN                                                                      
+------------------------------------------------------------------------------------------------------------------------------------------------------
+ Limit  (cost=47.79..47.81 rows=11 width=53) (actual time=0.087..0.091 rows=11 loops=1)
+   ->  Sort  (cost=47.79..47.81 rows=11 width=53) (actual time=0.085..0.087 rows=11 loops=1)
+         Sort Key: created_at DESC
+         Sort Method: quicksort  Memory: 26kB
+         ->  Bitmap Heap Scan on orders  (cost=4.51..47.60 rows=11 width=53) (actual time=0.050..0.075 rows=11 loops=1)
+               Recheck Cond: (user_id = 123)
+               Heap Blocks: exact=11
+               ->  Bitmap Index Scan on idx_orders_user_created_at_desc  (cost=0.00..4.51 rows=11 width=0) (actual time=0.039..0.039 rows=11 loops=1)
+                     Index Cond: (user_id = 123)
+ Planning Time: 0.289 ms
+ Execution Time: 0.111 ms
+(11 rows)
+
+                                                                  QUERY PLAN                                                                   
+-----------------------------------------------------------------------------------------------------------------------------------------------
+ Limit  (cost=0.43..8.45 rows=1 width=29) (actual time=0.011..0.012 rows=0 loops=1)
+   ->  Index Scan using idx_orders_user_created_at_desc on orders  (cost=0.43..8.45 rows=1 width=29) (actual time=0.010..0.011 rows=0 loops=1)
+         Index Cond: ((user_id = 123) AND (created_at >= (now() - '30 days'::interval)))
+         Filter: ((status)::text = 'PAID'::text)
+ Planning Time: 0.133 ms
+ Execution Time: 0.024 ms
+(6 rows)
+
+CREATE INDEX
+ANALYZE
+                                                                   QUERY PLAN                                                                    
+-------------------------------------------------------------------------------------------------------------------------------------------------
+ Limit  (cost=0.43..8.45 rows=1 width=29) (actual time=0.063..0.064 rows=0 loops=1)
+   ->  Index Scan using idx_orders_user_status_created_at on orders  (cost=0.43..8.45 rows=1 width=29) (actual time=0.062..0.062 rows=0 loops=1)
+         Index Cond: ((user_id = 123) AND ((status)::text = 'PAID'::text) AND (created_at >= (now() - '30 days'::interval)))
+ Planning Time: 0.286 ms
+ Execution Time: 0.080 ms
+(5 rows)
+

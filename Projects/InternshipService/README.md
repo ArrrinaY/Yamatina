@@ -1,134 +1,173 @@
 # Internship and Job Service API
 
-REST API сервис для управления стажировками и вакансиями с поддержкой ролевой авторизации, кэширования и полного CRUD функционала.
+REST API сервис для управления стажировками и вакансиями: компании публикуют вакансии, кандидаты подают заявки (applications), HR управляет статусами откликов.
 
-## Требования
+## О проекте
 
-- **.NET 8.0 SDK** или выше
-- **Docker Desktop** (для Windows/Mac) или **Docker Engine** (для Linux)
-- **Docker Compose** (обычно входит в Docker Desktop)
+**Предметная область:** платформа подбора стажировок и работы.
 
-## Быстрый старт
+- Компании создают профили и публикуют вакансии
+- Кандидаты подают заявки на вакансии
+- Теги описывают навыки вакансий (many-to-many)
+- Заявки проходят жизненный цикл: Applied → Reviewed → Accepted/Rejected
 
-### 1. Клонирование и подготовка
+## Запуск
 
-Убедитесь, что вы находитесь в директории проекта:
-cd InternshipService
+```bash
+docker compose up --build
+```
 
-### 2. Запуск через Docker Compose
+Сервисы:
+- API: http://localhost:8080
+- Swagger: http://localhost:8080/swagger
+- Health: http://localhost:8080/health
+- PostgreSQL: localhost:54320
 
-Запустите все сервисы (API, PostgreSQL, Redis, Liquibase):
+Перед первым запуском скопируйте `.env.example` в `.env`.
 
-docker-compose up --build
+## Архитектура
 
-### 3. Проверка работы
+```
+Client (HTTP)
+    ↓
+Controllers (ASP.NET Core)
+    ↓
+Services (бизнес-логика)
+    ↓
+Repositories (EF Core + Dapper)
+    ↓
+PostgreSQL (+ Redis для кэша)
+```
 
-### 1. Health Check
+Миграции БД применяются автоматически через Liquibase при старте `docker compose up`.
 
-Проверьте здоровье приложения:
+## Схема БД
 
-curl http://localhost:8080/health
+| Таблица | Описание | Связи |
+|---------|----------|-------|
+| `users` | Пользователи системы | — |
+| `companies` | Компании-работодатели | 1→N `vacancies` |
+| `vacancies` | Вакансии | N→1 `companies`, N↔M `tags` |
+| `candidates` | Кандидаты | 1→N `applications` |
+| `applications` | **Заявки на вакансии** | N→1 `candidates`, N→1 `vacancies` |
+| `tags` | Теги навыков | N↔M `vacancies` через `vacancy_tags` |
+| `vacancy_tags` | Связь вакансий и тегов | M↔M |
+| `api_keys` | API-ключи | — |
 
+## Основные endpoint'ы
 
-Ожидаемый ответ: `Healthy` (статус 200)
+| Метод | Endpoint | Описание |
+|-------|----------|----------|
+| GET | `/health` | Проверка API, PostgreSQL, Redis, партиций |
+| GET/POST/PUT/DELETE | `/api/companies` | CRUD компаний |
+| GET | `/api/companies/{id}/vacancies` | Вакансии компании |
+| GET/POST/PUT/DELETE | `/api/vacancies` | CRUD вакансий (pagination + filters) |
+| GET/POST/PUT/DELETE | `/api/candidates` | CRUD кандидатов |
+| GET/POST/PUT/DELETE | `/api/applications` | CRUD заявок |
+| GET | `/api/applications/vacancy/{id}` | Заявки по вакансии |
+| GET | `/api/applications/candidate/{id}` | Заявки кандидата |
+| GET | `/api/applications/candidate/{id}/filter` | Фильтрация заявок (status, from, to, page) |
+| GET | `/api/applications/vacancy/{id}/statistics` | Агрегация заявок по статусам |
+| GET/POST/PUT/DELETE | `/api/tags` | CRUD тегов |
+| POST | `/api/auth/login` | JWT-аутентификация |
 
-### 2. Swagger UI
+### Pagination и Filtering (vacancies)
 
-Откройте в браузере:
-http://localhost:8080/swagger
+```
+GET /api/vacancies?page=1&pageSize=20&type=0&location=Moscow&isActive=true&companyId=1
+```
 
-Здесь вы можете:
-- Просмотреть все доступные endpoints
-- Протестировать API интерактивно
-- Увидеть схемы данных и примеры запросов
+### Filtering (applications)
 
-## Аутентификация и авторизация
+```
+GET /api/applications/candidate/1/filter?status=0&from=2026-01-01&to=2026-12-31&page=1&pageSize=20
+```
 
-### Роли пользователей
+## Основная сущность для масштабирования
 
-1. **Admin** - полный доступ ко всем операциям (чтение, создание, обновление, удаление)
-2. **Manager** - чтение, создание и обновление данных
-3. **User** - чтение и создание данных
+**Таблица:** `applications`
 
-### Методы аутентификации
+**Почему она подходит:**
+- Каждый кандидат может подать множество заявок
+- Каждая вакансия получает поток откликов
+- Объём растёт пропорционально числу кандидатов × вакансий
+- Есть временное поле `applied_date` для партиционирования и аналитики
+- Типичные запросы: фильтрация по кандидату/вакансии/дате/статусу
 
-1. **JWT Bearer Token**
-   - Получите токен через `/api/auth/login`:
-    - Чтобы войти как админ:
-        Введите в /api/auth/login 
-        {
-          "username": "admin",
-          "password": "$2a$11$placeholder_hash_should_be_here"
-        }
-   - Используйте в заголовке: `Authorization: Bearer <token>`
+## Сложные SQL-запросы
 
-2. **API Key**
-   - Используйте в заголовке: `X-API-Key: <your-api-key>`
-   - API Key настраивается в `appsettings.json`
-   - По умолчанию: `your-api-key-here-change-in-production`
+### JOIN 1: заявки кандидата с компанией
 
-### Права доступа
+```sql
+SELECT a.id, a.candidate_id, a.vacancy_id, a.status, a.applied_date
+FROM applications a
+INNER JOIN vacancies v ON a.vacancy_id = v.id
+INNER JOIN companies co ON v.company_id = co.id
+WHERE a.candidate_id = @CandidateId
+ORDER BY a.applied_date DESC;
+```
 
-| Право | Admin | Manager | User |
-|-------|-------|---------|------|
-| Read | ✅ | ✅ | ✅ |
-| Create | ✅ | ✅ | ✅ |
-| Update | ✅ | ✅ | ❌ |
-| Delete | ✅ | ❌ | ❌ |
+Используется в: `ApplicationRepository.GetByCandidateIdAsync`
 
-## Запуск тестов
+### JOIN 2: заявки по вакансии с кандидатами
 
-### Unit-тесты репозиториев
+```sql
+SELECT a.id, a.candidate_id, a.vacancy_id, a.status, a.applied_date
+FROM applications a
+INNER JOIN candidates c ON a.candidate_id = c.id
+INNER JOIN vacancies v ON a.vacancy_id = v.id
+WHERE a.vacancy_id = @VacancyId
+ORDER BY a.applied_date DESC;
+```
 
-cd InternshipService
-dotnet test
+Используется в: `ApplicationRepository.GetByVacancyIdAsync`
 
-Или для конкретного проекта тестов:
-dotnet test InternshipService.Tests/InternshipService.Tests.csproj
+### Агрегирующий запрос: статистика заявок по статусам
 
-## Дополнительная информация
+```sql
+SELECT a.status, COUNT(*) AS count
+FROM applications a
+INNER JOIN vacancies v ON a.vacancy_id = v.id
+INNER JOIN companies c ON v.company_id = c.id
+WHERE a.vacancy_id = @VacancyId
+GROUP BY a.status
+ORDER BY a.status;
+```
 
-### Структура проекта
-InternshipService/
-├── InternshipService/
-│   ├── Controllers/        # API контроллеры
-│   ├── Services/           # Бизнес-логика
-│   ├── Repositories/       # Доступ к данным (EF Core + Dapper)
-│   ├── Models/             # Entities и DTO
-│   ├── Data/               # DbContext и миграции Liquibase
-│   ├── Auth/               # JWT и API Key аутентификация
-│   ├── Middleware/         # Обработка ошибок
-│   ├── Mappings/           # AutoMapper профили
-│   └── Validators/         # FluentValidation
-├── InternshipService.Tests/  # Unit-тесты
-├── docker-compose.yml      # Docker Compose конфигурация
-└── Dockerfile              # Docker образ API
+Используется в: `ApplicationRepository.GetStatisticsByVacancyAsync`  
+Endpoint: `GET /api/applications/vacancy/{id}/statistics`
 
-### Основные технологии
+## Генерация данных
 
-- **ASP.NET Core 8.0** - веб-фреймворк
-- **PostgreSQL** - база данных
-- **Entity Framework Core** - ORM
-- **Dapper** - микро-ORM для производительности
-- **Liquibase** - миграции БД
-- **Redis** - кэширование
-- **JWT Bearer** - аутентификация
-- **API Key** - альтернативная аутентификация
-- **Swagger/OpenAPI** - документация API
-- **xUnit** - unit-тестирование
-- **AutoMapper** - маппинг объектов
-- **FluentValidation** - валидация
-- **Serilog** - логирование
+Массовая генерация тестовых данных:
 
-### Конфигурация
+```bash
+docker compose exec postgres psql -U postgres -d postgres -f /path/to/scripts/generate-test-data.sql
+```
 
-Основные настройки в `appsettings.json`:
+Или с хоста:
 
-- `Jwt` - настройки JWT токенов (Issuer, Audience, Key, ExpiryMinutes)
-- `ApiKeySettings` - настройки API Key
-- `ConnectionStrings:Postgres` - строка подключения к PostgreSQL
-- `ConnectionStrings:Redis` - строка подключения к Redis
-- `Serilog` - настройки логирования
+```bash
+psql -h localhost -p 54320 -U postgres -d postgres -f scripts/generate-test-data.sql
+```
 
+Скрипт создаёт:
+- 1 000 компаний
+- 10 000 кандидатов
+- 5 000 вакансий
+- 100 000 заявок
 
+## Лабораторные работы
 
+Отчёты и SQL-скрипты находятся в папке `LAB/`:
+
+- `LAB/lab-01-indexes/` — индексы и EXPLAIN ANALYZE
+- `LAB/lab-02-scale/` — производительность при росте данных
+- `LAB/lab-03-partitioning/` — партиционирование PostgreSQL
+
+## Технологии
+
+- ASP.NET Core 8.0, PostgreSQL 17, Redis, Liquibase
+- EF Core + Dapper, JWT + API Key, Swagger, Serilog
+- Партиционирование `applications` (RANGE по `applied_date`)
+- Фоновые jobs: `CreatePartitionsJob`, `PartitionHealthMonitor`

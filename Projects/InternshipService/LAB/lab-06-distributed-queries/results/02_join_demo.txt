@@ -1,0 +1,22 @@
+﻿=== JOIN applications x vacancies (vacancies есть только на shard0) ===
+
+--- shard0: JOIN работает (обе таблицы локально) ---
+ id | candidate_id | vacancy_id |   title    
+----+--------------+------------+------------
+  1 |            1 |          2 | Vacancy 2
+  5 |            5 |          6 | Vacancy 6
+  7 |            7 |          8 | Vacancy 8
+ 16 |           16 |         17 | Vacancy 17
+ 23 |           23 |         24 | Vacancy 24
+(5 rows)
+
+--- shard1: JOIN падает (vacancies нет на этом шарде) ---
+docker : ERROR:  relation "vacancies" does not exist
+строка:8 знак:49
++ ... sql" -Raw | docker exec -i lab5-sharding-shard1-1 psql -U postgres -d ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (ERROR:  relatio... does not exist:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+LINE 3: JOIN vacancies v ON a.vacancy_id = v.id
+             ^

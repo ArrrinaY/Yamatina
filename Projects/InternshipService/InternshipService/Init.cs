@@ -7,6 +7,7 @@ using InternshipService.Mappings;
 using InternshipService.Middleware;
 using InternshipService.Repositories;
 using InternshipService.Services;
+using InternshipService.Partitioning;
 using InternshipService.Validators;
 
 using FluentValidation;
@@ -156,6 +157,10 @@ public static partial class Init
                 configuration.GetConnectionString("Redis")!,
                 name: "redis",
                 failureStatus: HealthStatus.Unhealthy
+            )
+            .AddCheck<PartitionHealthCheck>(
+                "partitions",
+                failureStatus: HealthStatus.Unhealthy
             );
         return services;
     }
@@ -226,6 +231,16 @@ public static partial class Init
         return services;
     }
     
+    public static IServiceCollection AddPartitioning(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.Configure<PartitionSettings>(configuration.GetSection("PartitionSettings"));
+        services.AddScoped<IPartitionService, PartitionService>();
+        services.AddSingleton<IPartitionAlertService, PartitionAlertService>();
+        services.AddHostedService<CreatePartitionsJob>();
+        services.AddHostedService<PartitionHealthMonitor>();
+        return services;
+    }
+
     public static IServiceCollection RegisterServices(this IServiceCollection services)
     {
         services.AddScoped<ICompanyService, CompanyService>();

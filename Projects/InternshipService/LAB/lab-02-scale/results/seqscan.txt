@@ -1,0 +1,9 @@
+ Seq Scan on events  (cost=0.00..209.00 rows=1 width=37) (actual time=0.470..0.470 rows=0 loops=1)
+   Rows Removed by Filter: 10000
+ Execution Time: 0.506 ms
+ Seq Scan on events  (cost=0.00..2084.00 rows=2 width=37) (actual time=8.401..8.403 rows=0 loops=1)
+   Rows Removed by Filter: 100000
+ Execution Time: 8.469 ms
+   ->  Parallel Seq Scan on events  (cost=0.00..13542.33 rows=5 width=37) (actual time=6.128..29.073 rows=3 loops=3)
+         Rows Removed by Filter: 333330
+ Execution Time: 35.626 ms

@@ -53,6 +53,26 @@ public class ApplicationsController(IApplicationService applicationService, IVal
         return TypedResults.Ok(applications);
     }
 
+    [Authorize(Policy = "CanRead")]
+    [HttpGet("candidate/{candidateId:int}/filter", Name = "GetFilteredApplicationsByCandidateId")]
+    [ProducesResponseType<List<ApplicationResponseModel>>(StatusCodes.Status200OK)]
+    public async Task<IResult> GetFilteredByCandidateIdAsync(
+        [FromRoute] int candidateId,
+        [FromQuery] ApplicationFilterModel filter)
+    {
+        var applications = await applicationService.GetFilteredByCandidateAsync(candidateId, filter);
+        return TypedResults.Ok(applications);
+    }
+
+    [Authorize(Policy = "CanRead")]
+    [HttpGet("vacancy/{vacancyId:int}/statistics", Name = "GetApplicationStatisticsByVacancyId")]
+    [ProducesResponseType<List<ApplicationStatisticsModel>>(StatusCodes.Status200OK)]
+    public async Task<IResult> GetStatisticsByVacancyIdAsync([FromRoute] int vacancyId)
+    {
+        var statistics = await applicationService.GetStatisticsByVacancyAsync(vacancyId);
+        return TypedResults.Ok(statistics);
+    }
+
     [Authorize(Policy = "CanCreate")]
     [HttpPost(Name = "CreateApplication")]
     [Consumes(MediaTypeNames.Application.Json)]

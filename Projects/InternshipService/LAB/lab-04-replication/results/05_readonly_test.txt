@@ -1,0 +1,14 @@
+﻿=== Часть 4: попытка INSERT на Replica ===
+
+docker : ERROR:  cannot execute INSERT in a read-only transaction
+строка:4 знак:52
++ ... sql" -Raw | docker exec -i internshipservice-postgres-replica-1 psql  ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (ERROR:  cannot ...nly transaction:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+ rows_with_candidate_999 
+-------------------------
+                       0
+(1 row)
+

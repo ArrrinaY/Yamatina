@@ -70,3 +70,19 @@ databaseChangeLog:
         - sqlFile:
             path: migrations/009_create_api_keys_table.sql
             relativeToChangelogFile: true
+
+  - changeSet:
+      id: 010
+      author: admin
+      changes:
+        - sqlFile:
+            path: migrations/010_add_applications_composite_index.sql
+            relativeToChangelogFile: true
+
+  - changeSet:
+      id: 011
+      author: admin
+      changes:
+        - sqlFile:
+            path: migrations/011_partition_applications.sql
+            relativeToChangelogFile: true

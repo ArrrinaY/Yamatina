@@ -1,0 +1,15 @@
+ rows  | table_size | total_size 
+-------+------------+------------
+ 10000 | 672 kB     | 944 kB
+(1 row)
+
+  rows  | table_size | total_size 
+--------+------------+------------
+ 100000 | 6672 kB    | 8912 kB
+(1 row)
+
+  rows   | table_size | total_size 
+---------+------------+------------
+ 1000000 | 65 MB      | 87 MB
+(1 row)
+

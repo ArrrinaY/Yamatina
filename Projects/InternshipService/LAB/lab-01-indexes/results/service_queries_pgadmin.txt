@@ -1,0 +1,32 @@
+Service Query measurements from pgAdmin (candidate_id = 1, 0 rows)
+
+=== Query 1 — JOIN vacancies + companies ===
+Execution Time: 0.111 ms
+Planning Time: 1.240 ms
+Plan: Sort -> Nested Loop -> Nested Loop -> Append (16 partitions)
+  Index Scan on applications_*_candidate_id_applied_date_idx (2025_10-12)
+  Seq Scan on applications_2026_* (empty partitions)
+  Bitmap Heap Scan on applications_default
+  Index Scan vacancies_pkey (never executed)
+  Index Only Scan companies_pkey (never executed)
+
+=== Query 2 — status + date range 2026 ===
+Execution Time: 0.081 ms
+Planning Time: 1.491 ms
+Plan: Limit -> Sort -> Nested Loop -> Append (12 partitions: 2026_01-2026_12 only)
+  Partition pruning: YES (2025 partitions excluded)
+  Seq Scan with Filter on each 2026 partition
+
+=== Query 3 — pagination LIMIT 20 ===
+Execution Time: 0.094 ms
+Planning Time: 0.778 ms
+Plan: Limit -> Sort -> Append (16 partitions)
+  Index Scan candidate_id_applied_date_idx on 2025_10-12
+  Seq Scan on empty 2026 partitions
+  Bitmap Heap Scan on applications_default
+
+=== Assignment 21 — lab.orders final index ===
+Execution Time: 0.039 ms
+Planning Time: 0.171 ms
+Plan: Limit -> Index Scan using idx_orders_user_status_created_at
+  Index Cond: user_id=123 AND status='PAID' AND created_at >= now()-30 days

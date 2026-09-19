@@ -1,0 +1,354 @@
+﻿=== Assignment 5: full table scan ===
+                                                    QUERY PLAN                                                    
+------------------------------------------------------------------------------------------------------------------
+ Seq Scan on orders  (cost=0.00..20828.00 rows=1000000 width=53) (actual time=0.009..45.780 rows=1000000 loops=1)
+ Planning Time: 0.369 ms
+ Execution Time: 68.738 ms
+(3 rows)
+
+                                                   QUERY PLAN                                                   
+----------------------------------------------------------------------------------------------------------------
+ Seq Scan on orders  (cost=0.00..23328.00 rows=999900 width=53) (actual time=0.010..90.427 rows=999999 loops=1)
+   Filter: (amount > '0'::numeric)
+   Rows Removed by Filter: 1
+ Planning Time: 0.285 ms
+ Execution Time: 115.500 ms
+(5 rows)
+
+=== Assignment 10: bitmap scan ===
+                                                              QUERY PLAN                                                               
+---------------------------------------------------------------------------------------------------------------------------------------
+ Bitmap Heap Scan on orders  (cost=2804.64..16768.48 rows=250867 width=53) (actual time=6.128..35.158 rows=250153 loops=1)
+   Recheck Cond: ((status)::text = 'NEW'::text)
+   Heap Blocks: exact=10828
+   ->  Bitmap Index Scan on idx_orders_status  (cost=0.00..2741.93 rows=250867 width=0) (actual time=4.895..4.896 rows=250153 loops=1)
+         Index Cond: ((status)::text = 'NEW'::text)
+ Planning Time: 0.163 ms
+ Execution Time: 40.968 ms
+(7 rows)
+
+                                                   QUERY PLAN                                                   
+----------------------------------------------------------------------------------------------------------------
+ Seq Scan on orders  (cost=0.00..25828.00 rows=206263 width=53) (actual time=0.009..93.962 rows=200229 loops=1)
+   Filter: ((amount >= '1000'::numeric) AND (amount <= '3000'::numeric))
+   Rows Removed by Filter: 799771
+ Planning Time: 0.128 ms
+ Execution Time: 99.296 ms
+(5 rows)
+
+=== Assignment 11: two indexes ===
+                                                                 QUERY PLAN                                                                 
+--------------------------------------------------------------------------------------------------------------------------------------------
+ Index Scan using idx_orders_user_status_created_at on orders  (cost=0.42..16.48 rows=3 width=53) (actual time=0.031..0.037 rows=4 loops=1)
+   Index Cond: ((user_id = 123) AND ((status)::text = 'PAID'::text))
+ Planning Time: 0.107 ms
+ Execution Time: 0.049 ms
+(4 rows)
+
+=== Assignment 13: column order ===
+CREATE INDEX
+                                                             QUERY PLAN                                                              
+-------------------------------------------------------------------------------------------------------------------------------------
+ Bitmap Heap Scan on orders  (cost=4.51..47.60 rows=11 width=53) (actual time=0.080..0.105 rows=11 loops=1)
+   Recheck Cond: (user_id = 123)
+   Heap Blocks: exact=11
+   ->  Bitmap Index Scan on idx_orders_user_created_at  (cost=0.00..4.51 rows=11 width=0) (actual time=0.068..0.068 rows=11 loops=1)
+         Index Cond: (user_id = 123)
+ Planning Time: 0.427 ms
+ Execution Time: 0.130 ms
+(7 rows)
+
+                                                             QUERY PLAN                                                             
+------------------------------------------------------------------------------------------------------------------------------------
+ Index Scan using idx_orders_user_created_at on orders  (cost=0.43..8.45 rows=1 width=53) (actual time=0.018..0.019 rows=0 loops=1)
+   Index Cond: ((user_id = 123) AND (created_at > (now() - '30 days'::interval)))
+ Planning Time: 0.126 ms
+ Execution Time: 0.028 ms
+(4 rows)
+
+                                                               QUERY PLAN                                                               
+----------------------------------------------------------------------------------------------------------------------------------------
+ Bitmap Heap Scan on orders  (cost=722.96..12225.06 rows=38520 width=53) (actual time=3.541..15.334 rows=41453 loops=1)
+   Recheck Cond: (created_at > (now() - '30 days'::interval))
+   Heap Blocks: exact=10615
+   ->  Bitmap Index Scan on idx_orders_created_at  (cost=0.00..713.33 rows=38520 width=0) (actual time=2.437..2.438 rows=41453 loops=1)
+         Index Cond: (created_at > (now() - '30 days'::interval))
+ Planning Time: 0.140 ms
+ Execution Time: 16.263 ms
+(7 rows)
+
+CREATE INDEX
+                                                             QUERY PLAN                                                              
+-------------------------------------------------------------------------------------------------------------------------------------
+ Bitmap Heap Scan on orders  (cost=4.51..47.60 rows=11 width=53) (actual time=0.026..0.051 rows=11 loops=1)
+   Recheck Cond: (user_id = 123)
+   Heap Blocks: exact=11
+   ->  Bitmap Index Scan on idx_orders_user_created_at  (cost=0.00..4.51 rows=11 width=0) (actual time=0.016..0.016 rows=11 loops=1)
+         Index Cond: (user_id = 123)
+ Planning Time: 0.249 ms
+ Execution Time: 0.075 ms
+(7 rows)
+
+                                                               QUERY PLAN                                                               
+----------------------------------------------------------------------------------------------------------------------------------------
+ Bitmap Heap Scan on orders  (cost=722.96..12225.06 rows=38520 width=53) (actual time=4.011..15.286 rows=41453 loops=1)
+   Recheck Cond: (created_at > (now() - '30 days'::interval))
+   Heap Blocks: exact=10615
+   ->  Bitmap Index Scan on idx_orders_created_at  (cost=0.00..713.33 rows=38520 width=0) (actual time=2.790..2.791 rows=41453 loops=1)
+         Index Cond: (created_at > (now() - '30 days'::interval))
+ Planning Time: 0.107 ms
+ Execution Time: 16.173 ms
+(7 rows)
+
+=== Assignment 16: index only scan ===
+                                                             QUERY PLAN                                                              
+-------------------------------------------------------------------------------------------------------------------------------------
+ Bitmap Heap Scan on orders  (cost=4.51..47.60 rows=11 width=16) (actual time=0.032..0.053 rows=11 loops=1)
+   Recheck Cond: (user_id = 123)
+   Heap Blocks: exact=11
+   ->  Bitmap Index Scan on idx_orders_user_created_at  (cost=0.00..4.51 rows=11 width=0) (actual time=0.021..0.021 rows=11 loops=1)
+         Index Cond: (user_id = 123)
+ Planning Time: 0.169 ms
+ Execution Time: 0.069 ms
+(7 rows)
+
+CREATE INDEX
+ANALYZE
+                                                                QUERY PLAN                                                                 
+-------------------------------------------------------------------------------------------------------------------------------------------
+ Index Only Scan using idx_orders_user_id_include on orders  (cost=0.42..4.62 rows=11 width=23) (actual time=0.087..0.092 rows=11 loops=1)
+   Index Cond: (user_id = 123)
+   Heap Fetches: 0
+ Planning Time: 0.402 ms
+ Execution Time: 0.118 ms
+(5 rows)
+
+=== Assignment 17: partial index ===
+                                                                 QUERY PLAN                                                                  
+---------------------------------------------------------------------------------------------------------------------------------------------
+ Sort  (cost=48546.76..49185.26 rows=255400 width=53) (actual time=93.035..121.094 rows=250153 loops=1)
+   Sort Key: created_at
+   Sort Method: external merge  Disk: 16160kB
+   ->  Bitmap Heap Scan on orders  (cost=2855.78..16876.28 rows=255400 width=53) (actual time=6.010..37.976 rows=250153 loops=1)
+         Recheck Cond: ((status)::text = 'NEW'::text)
+         Heap Blocks: exact=10828
+         ->  Bitmap Index Scan on idx_orders_status  (cost=0.00..2791.93 rows=255400 width=0) (actual time=4.777..4.778 rows=250153 loops=1)
+               Index Cond: ((status)::text = 'NEW'::text)
+ Planning Time: 0.233 ms
+ Execution Time: 130.374 ms
+(10 rows)
+
+CREATE INDEX
+ANALYZE
+                                                                 QUERY PLAN                                                                  
+---------------------------------------------------------------------------------------------------------------------------------------------
+ Sort  (cost=47430.61..48051.11 rows=248200 width=53) (actual time=113.399..143.217 rows=250153 loops=1)
+   Sort Key: created_at
+   Sort Method: external merge  Disk: 16160kB
+   ->  Bitmap Heap Scan on orders  (cost=2775.98..16706.47 rows=248200 width=53) (actual time=6.435..47.572 rows=250153 loops=1)
+         Recheck Cond: ((status)::text = 'NEW'::text)
+         Heap Blocks: exact=10828
+         ->  Bitmap Index Scan on idx_orders_status  (cost=0.00..2713.93 rows=248200 width=0) (actual time=5.029..5.031 rows=250153 loops=1)
+docker : NOTICE:  table "users_email" does not exist, skipping
+C:\Users\Арина\AppData\Local\Temp\ps-script-033f41da-d0b1-4e9e-bfdc-6521b88c68ba.ps1:109 знак:469
++ ... sql" -Raw | docker exec -i internshipservice-postgres-1 psql -U postg ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (NOTICE:  table ...exist, skipping:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+               Index Cond: ((status)::text = 'NEW'::text)
+ Planning Time: 0.342 ms
+ Execution Time: 153.004 ms
+(10 rows)
+
+=== Assignment 18: expression index ===
+DROP TABLE
+CREATE TABLE
+INSERT 0 100000
+CREATE INDEX
+ANALYZE
+                                                 QUERY PLAN                                                 
+------------------------------------------------------------------------------------------------------------
+ Seq Scan on users_email  (cost=0.00..2236.00 rows=500 width=29) (actual time=0.819..27.632 rows=1 loops=1)
+   Filter: (lower((email)::text) = 'user1@example.com'::text)
+   Rows Removed by Filter: 99999
+ Planning Time: 0.270 ms
+ Execution Time: 27.664 ms
+(5 rows)
+
+CREATE INDEX
+ANALYZE
+                                                             QUERY PLAN                                                             
+------------------------------------------------------------------------------------------------------------------------------------
+ Index Scan using idx_users_lower_email on users_email  (cost=0.42..8.44 rows=1 width=29) (actual time=0.029..0.030 rows=1 loops=1)
+   Index Cond: (lower((email)::text) = 'user1@example.com'::text)
+ Planning Time: 0.149 ms
+ Execution Time: 0.044 ms
+(4 rows)
+
+=== Assignment 19: insert benchmark ===
+NOTICE:  table "insert_test" does not exist, skipping
+DROP TABLE
+CREATE TABLE
+Timing is on.
+INSERT 0 50000
+Time: 152.048 ms
+TRUNCATE TABLE
+Time: 2.157 ms
+CREATE INDEX
+Time: 1.147 ms
+CREATE INDEX
+Time: 1.240 ms
+INSERT 0 50000
+Time: 364.327 ms
+Timing is off.
+=== Assignment 20: pg_stat_user_indexes ===
+ schemaname | relname |           indexrelname            | idx_scan 
+------------+---------+-----------------------------------+----------
+ lab        | orders  | idx_orders_status                 |        6
+ lab        | orders  | idx_orders_created_at             |        4
+ lab        | orders  | idx_orders_user_created_at        |        4
+ lab        | orders  | idx_orders_user_status            |        2
+ lab        | orders  | idx_orders_user_created_at_desc   |        2
+ lab        | orders  | idx_orders_user_status_created_at |        2
+ lab        | orders  | idx_orders_user_id                |        1
+ lab        | orders  | idx_orders_user_id_include        |        1
+ lab        | orders  | idx_orders_new                    |        0
+ lab        | orders  | idx_orders_created_at_user        |        0
+ lab        | orders  | orders_pkey                       |        0
+(11 rows)
+
+=== Service Query 1 ===
+                                                                 QUERY PLAN                                                                 
+--------------------------------------------------------------------------------------------------------------------------------------------
+ Sort  (cost=119.19..119.23 rows=16 width=36) (actual time=1.745..1.751 rows=0 loops=1)
+   Sort Key: a.applied_date DESC
+   Sort Method: quicksort  Memory: 25kB
+   ->  Nested Loop  (cost=0.56..118.87 rows=16 width=36) (actual time=1.737..1.743 rows=0 loops=1)
+         ->  Nested Loop  (cost=0.28..113.88 rows=16 width=44) (actual time=1.736..1.742 rows=0 loops=1)
+               ->  Append  (cost=0.00..5.08 rows=16 width=36) (actual time=1.735..1.740 rows=0 loops=1)
+                     ->  Seq Scan on applications_2025_10 a_1  (cost=0.00..0.00 rows=1 width=36) (actual time=0.013..0.013 rows=0 loops=1)
+                           Filter: (candidate_id = 1)
+                     ->  Seq Scan on applications_2025_11 a_2  (cost=0.00..1.00 rows=1 width=36) (actual time=1.373..1.373 rows=0 loops=1)
+                           Filter: (candidate_id = 1)
+                     ->  Seq Scan on applications_2025_12 a_3  (cost=0.00..1.00 rows=1 width=36) (actual time=0.018..0.018 rows=0 loops=1)
+                           Filter: (candidate_id = 1)
+                     ->  Seq Scan on applications_2026_01 a_4  (cost=0.00..0.00 rows=1 width=36) (actual time=0.003..0.004 rows=0 loops=1)
+                           Filter: (candidate_id = 1)
+                     ->  Seq Scan on applications_2026_02 a_5  (cost=0.00..0.00 rows=1 width=36) (actual time=0.002..0.002 rows=0 loops=1)
+                           Filter: (candidate_id = 1)
+                     ->  Seq Scan on applications_2026_03 a_6  (cost=0.00..0.00 rows=1 width=36) (actual time=0.012..0.012 rows=0 loops=1)
+                           Filter: (candidate_id = 1)
+                     ->  Seq Scan on applications_2026_04 a_7  (cost=0.00..1.00 rows=1 width=36) (actual time=0.012..0.012 rows=0 loops=1)
+                           Filter: (candidate_id = 1)
+                     ->  Seq Scan on applications_2026_05 a_8  (cost=0.00..1.00 rows=1 width=36) (actual time=0.259..0.259 rows=0 loops=1)
+                           Filter: (candidate_id = 1)
+                     ->  Seq Scan on applications_2026_06 a_9  (cost=0.00..0.00 rows=1 width=36) (actual time=0.003..0.003 rows=0 loops=1)
+                           Filter: (candidate_id = 1)
+                     ->  Seq Scan on applications_2026_07 a_10  (cost=0.00..1.00 rows=1 width=36) (actual time=0.012..0.012 rows=0 loops=1)
+                           Filter: (candidate_id = 1)
+                     ->  Seq Scan on applications_2026_08 a_11  (cost=0.00..0.00 rows=1 width=36) (actual time=0.002..0.002 rows=0 loops=1)
+                           Filter: (candidate_id = 1)
+                     ->  Seq Scan on applications_2026_09 a_12  (cost=0.00..0.00 rows=1 width=36) (actual time=0.005..0.005 rows=0 loops=1)
+                           Filter: (candidate_id = 1)
+                     ->  Seq Scan on applications_2026_10 a_13  (cost=0.00..0.00 rows=1 width=36) (actual time=0.007..0.007 rows=0 loops=1)
+                           Filter: (candidate_id = 1)
+                     ->  Seq Scan on applications_2026_11 a_14  (cost=0.00..0.00 rows=1 width=36) (actual time=0.002..0.002 rows=0 loops=1)
+                           Filter: (candidate_id = 1)
+                     ->  Seq Scan on applications_2026_12 a_15  (cost=0.00..0.00 rows=1 width=36) (actual time=0.002..0.002 rows=0 loops=1)
+                           Filter: (candidate_id = 1)
+                     ->  Seq Scan on applications_default a_16  (cost=0.00..0.00 rows=1 width=36) (actual time=0.002..0.002 rows=0 loops=1)
+                           Filter: (candidate_id = 1)
+               ->  Index Scan using vacancies_pkey on vacancies v  (cost=0.28..6.80 rows=1 width=16) (never executed)
+                     Index Cond: (id = a.vacancy_id)
+         ->  Index Only Scan using companies_pkey on companies co  (cost=0.28..0.31 rows=1 width=8) (never executed)
+               Index Cond: (id = v.company_id)
+               Heap Fetches: 0
+ Planning Time: 15.068 ms
+ Execution Time: 1.836 ms
+(45 rows)
+
+=== Service Query 2 ===
+                                                                                                        QUERY PLAN                                                                                                        
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Limit  (cost=90.88..90.91 rows=12 width=36) (actual time=0.035..0.037 rows=0 loops=1)
+   ->  Sort  (cost=90.88..90.91 rows=12 width=36) (actual time=0.032..0.035 rows=0 loops=1)
+         Sort Key: a.applied_date DESC
+         Sort Method: quicksort  Memory: 25kB
+         ->  Nested Loop  (cost=0.28..90.66 rows=12 width=36) (actual time=0.026..0.028 rows=0 loops=1)
+               ->  Append  (cost=0.00..3.06 rows=12 width=36) (actual time=0.026..0.027 rows=0 loops=1)
+                     ->  Seq Scan on applications_2026_01 a_1  (cost=0.00..0.00 rows=1 width=36) (actual time=0.005..0.005 rows=0 loops=1)
+                           Filter: ((applied_date >= '2026-01-01 00:00:00'::timestamp without time zone) AND (applied_date < '2026-12-31 00:00:00'::timestamp without time zone) AND (candidate_id = 1) AND (status = 0))
+                     ->  Seq Scan on applications_2026_02 a_2  (cost=0.00..0.00 rows=1 width=36) (actual time=0.002..0.002 rows=0 loops=1)
+                           Filter: ((applied_date >= '2026-01-01 00:00:00'::timestamp without time zone) AND (applied_date < '2026-12-31 00:00:00'::timestamp without time zone) AND (candidate_id = 1) AND (status = 0))
+                     ->  Seq Scan on applications_2026_03 a_3  (cost=0.00..0.00 rows=1 width=36) (actual time=0.003..0.003 rows=0 loops=1)
+                           Filter: ((applied_date >= '2026-01-01 00:00:00'::timestamp without time zone) AND (applied_date < '2026-12-31 00:00:00'::timestamp without time zone) AND (candidate_id = 1) AND (status = 0))
+                     ->  Seq Scan on applications_2026_04 a_4  (cost=0.00..1.00 rows=1 width=36) (actual time=0.004..0.004 rows=0 loops=1)
+                           Filter: ((applied_date >= '2026-01-01 00:00:00'::timestamp without time zone) AND (applied_date < '2026-12-31 00:00:00'::timestamp without time zone) AND (candidate_id = 1) AND (status = 0))
+                     ->  Seq Scan on applications_2026_05 a_5  (cost=0.00..1.00 rows=1 width=36) (actual time=0.002..0.003 rows=0 loops=1)
+                           Filter: ((applied_date >= '2026-01-01 00:00:00'::timestamp without time zone) AND (applied_date < '2026-12-31 00:00:00'::timestamp without time zone) AND (candidate_id = 1) AND (status = 0))
+                     ->  Seq Scan on applications_2026_06 a_6  (cost=0.00..0.00 rows=1 width=36) (actual time=0.001..0.001 rows=0 loops=1)
+                           Filter: ((applied_date >= '2026-01-01 00:00:00'::timestamp without time zone) AND (applied_date < '2026-12-31 00:00:00'::timestamp without time zone) AND (candidate_id = 1) AND (status = 0))
+                     ->  Seq Scan on applications_2026_07 a_7  (cost=0.00..1.00 rows=1 width=36) (actual time=0.002..0.002 rows=0 loops=1)
+                           Filter: ((applied_date >= '2026-01-01 00:00:00'::timestamp without time zone) AND (applied_date < '2026-12-31 00:00:00'::timestamp without time zone) AND (candidate_id = 1) AND (status = 0))
+                     ->  Seq Scan on applications_2026_08 a_8  (cost=0.00..0.00 rows=1 width=36) (actual time=0.001..0.001 rows=0 loops=1)
+                           Filter: ((applied_date >= '2026-01-01 00:00:00'::timestamp without time zone) AND (applied_date < '2026-12-31 00:00:00'::timestamp without time zone) AND (candidate_id = 1) AND (status = 0))
+                     ->  Seq Scan on applications_2026_09 a_9  (cost=0.00..0.00 rows=1 width=36) (actual time=0.001..0.001 rows=0 loops=1)
+                           Filter: ((applied_date >= '2026-01-01 00:00:00'::timestamp without time zone) AND (applied_date < '2026-12-31 00:00:00'::timestamp without time zone) AND (candidate_id = 1) AND (status = 0))
+                     ->  Seq Scan on applications_2026_10 a_10  (cost=0.00..0.00 rows=1 width=36) (actual time=0.001..0.001 rows=0 loops=1)
+                           Filter: ((applied_date >= '2026-01-01 00:00:00'::timestamp without time zone) AND (applied_date < '2026-12-31 00:00:00'::timestamp without time zone) AND (candidate_id = 1) AND (status = 0))
+                     ->  Seq Scan on applications_2026_11 a_11  (cost=0.00..0.00 rows=1 width=36) (actual time=0.001..0.001 rows=0 loops=1)
+                           Filter: ((applied_date >= '2026-01-01 00:00:00'::timestamp without time zone) AND (applied_date < '2026-12-31 00:00:00'::timestamp without time zone) AND (candidate_id = 1) AND (status = 0))
+                     ->  Seq Scan on applications_2026_12 a_12  (cost=0.00..0.00 rows=1 width=36) (actual time=0.001..0.001 rows=0 loops=1)
+                           Filter: ((applied_date >= '2026-01-01 00:00:00'::timestamp without time zone) AND (applied_date < '2026-12-31 00:00:00'::timestamp without time zone) AND (candidate_id = 1) AND (status = 0))
+               ->  Index Only Scan using vacancies_pkey on vacancies v  (cost=0.28..7.30 rows=1 width=8) (never executed)
+                     Index Cond: (id = a.vacancy_id)
+                     Heap Fetches: 0
+ Planning Time: 1.641 ms
+ Execution Time: 0.089 ms
+(35 rows)
+
+=== Service Query 3 ===
+                                                              QUERY PLAN                                                              
+--------------------------------------------------------------------------------------------------------------------------------------
+ Limit  (cost=5.40..5.44 rows=16 width=36) (actual time=0.046..0.050 rows=0 loops=1)
+   ->  Sort  (cost=5.40..5.44 rows=16 width=36) (actual time=0.044..0.048 rows=0 loops=1)
+         Sort Key: a.applied_date DESC
+         Sort Method: quicksort  Memory: 25kB
+         ->  Append  (cost=0.00..5.08 rows=16 width=36) (actual time=0.039..0.042 rows=0 loops=1)
+               ->  Seq Scan on applications_2025_10 a_1  (cost=0.00..0.00 rows=1 width=36) (actual time=0.008..0.008 rows=0 loops=1)
+                     Filter: (candidate_id = 1)
+               ->  Seq Scan on applications_2025_11 a_2  (cost=0.00..1.00 rows=1 width=36) (actual time=0.007..0.007 rows=0 loops=1)
+                     Filter: (candidate_id = 1)
+               ->  Seq Scan on applications_2025_12 a_3  (cost=0.00..1.00 rows=1 width=36) (actual time=0.003..0.003 rows=0 loops=1)
+                     Filter: (candidate_id = 1)
+               ->  Seq Scan on applications_2026_01 a_4  (cost=0.00..0.00 rows=1 width=36) (actual time=0.001..0.001 rows=0 loops=1)
+                     Filter: (candidate_id = 1)
+               ->  Seq Scan on applications_2026_02 a_5  (cost=0.00..0.00 rows=1 width=36) (actual time=0.001..0.001 rows=0 loops=1)
+                     Filter: (candidate_id = 1)
+               ->  Seq Scan on applications_2026_03 a_6  (cost=0.00..0.00 rows=1 width=36) (actual time=0.001..0.001 rows=0 loops=1)
+                     Filter: (candidate_id = 1)
+               ->  Seq Scan on applications_2026_04 a_7  (cost=0.00..1.00 rows=1 width=36) (actual time=0.002..0.002 rows=0 loops=1)
+                     Filter: (candidate_id = 1)
+               ->  Seq Scan on applications_2026_05 a_8  (cost=0.00..1.00 rows=1 width=36) (actual time=0.003..0.003 rows=0 loops=1)
+                     Filter: (candidate_id = 1)
+               ->  Seq Scan on applications_2026_06 a_9  (cost=0.00..0.00 rows=1 width=36) (actual time=0.001..0.001 rows=0 loops=1)
+                     Filter: (candidate_id = 1)
+               ->  Seq Scan on applications_2026_07 a_10  (cost=0.00..1.00 rows=1 width=36) (actual time=0.002..0.003 rows=0 loops=1)
+                     Filter: (candidate_id = 1)
+               ->  Seq Scan on applications_2026_08 a_11  (cost=0.00..0.00 rows=1 width=36) (actual time=0.001..0.001 rows=0 loops=1)
+                     Filter: (candidate_id = 1)
+               ->  Seq Scan on applications_2026_09 a_12  (cost=0.00..0.00 rows=1 width=36) (actual time=0.001..0.001 rows=0 loops=1)
+                     Filter: (candidate_id = 1)
+               ->  Seq Scan on applications_2026_10 a_13  (cost=0.00..0.00 rows=1 width=36) (actual time=0.001..0.001 rows=0 loops=1)
+                     Filter: (candidate_id = 1)
+               ->  Seq Scan on applications_2026_11 a_14  (cost=0.00..0.00 rows=1 width=36) (actual time=0.001..0.001 rows=0 loops=1)
+                     Filter: (candidate_id = 1)
+               ->  Seq Scan on applications_2026_12 a_15  (cost=0.00..0.00 rows=1 width=36) (actual time=0.001..0.001 rows=0 loops=1)
+                     Filter: (candidate_id = 1)
+               ->  Seq Scan on applications_default a_16  (cost=0.00..0.00 rows=1 width=36) (actual time=0.001..0.001 rows=0 loops=1)
+                     Filter: (candidate_id = 1)
+ Planning Time: 1.431 ms
+ Execution Time: 0.118 ms
+(39 rows)
+

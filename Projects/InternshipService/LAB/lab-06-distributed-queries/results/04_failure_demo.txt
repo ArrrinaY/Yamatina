@@ -1,0 +1,38 @@
+﻿=== Отказ shard2 (docker stop lab5-sharding-shard2-1) ===
+
+--- shard0: работает ---
+ rows_on_this_shard 
+--------------------
+              33286
+(1 row)
+
+ id | candidate_id | status 
+----+--------------+--------
+  1 |            1 |      1
+  5 |            5 |      1
+  7 |            7 |      3
+(3 rows)
+
+--- shard1: работает ---
+ rows_on_this_shard 
+--------------------
+              33440
+(1 row)
+
+ id | candidate_id | status 
+----+--------------+--------
+  2 |            2 |      2
+  3 |            3 |      3
+  4 |            4 |      0
+(3 rows)
+
+--- shard2: недоступен ---
+docker : Error response from daemon: container ff8ed3a51590748063783d0eea458cc623abe6cc43e8512af38ff1bc664fa5b2 is not 
+running
+строка:9 знак:1
++ docker exec lab5-sharding-shard2-1 psql -U postgres -d postgres -c 'S ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Error response ... is not running:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+--- shard2 перезапущен: Up 8 seconds (healthy) ---
