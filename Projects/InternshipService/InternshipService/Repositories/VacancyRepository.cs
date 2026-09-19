@@ -101,5 +101,23 @@ public class VacancyRepository(AppDbContext dbContext, DbConnection connection) 
 
         return await query.CountAsync();
     }
+
+    public async Task<List<Vacancy>> GetByCompanyIdAsync(int companyId)
+    {
+        const string sql = """
+            SELECT v.id, v.title, v.description, v.requirements, v.salary_range,
+                   v.type, v.location, v.is_active, v.created_date, v.company_id
+            FROM vacancies v
+            INNER JOIN companies c ON v.company_id = c.id
+            WHERE v.company_id = @CompanyId
+            ORDER BY v.created_date DESC
+            """;
+
+        if (_connection.State != System.Data.ConnectionState.Open)
+            await _connection.OpenAsync();
+
+        var rows = await _connection.QueryAsync<Vacancy>(sql, new { CompanyId = companyId });
+        return rows.ToList();
+    }
 }
 

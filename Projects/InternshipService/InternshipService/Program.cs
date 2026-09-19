@@ -24,6 +24,7 @@ builder.Services.AddValidators();
 builder.Services.AddCorsPolicy();
 
 builder.Services.RegisterServices();
+builder.Services.AddPartitioning(builder.Configuration);
 builder.Services.AddMappings();
 builder.Services.AddRedisCache(builder.Configuration);
 

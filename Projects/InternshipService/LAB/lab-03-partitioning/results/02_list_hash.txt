@@ -1,0 +1,43 @@
+﻿docker : NOTICE:  schema "lab" already exists, skipping
+C:\Users\Арина\AppData\Local\Temp\ps-script-1ad345a1-875b-4297-866d-263925a8b03a.ps1:109 знак:403
++ ... sql" -Raw | docker exec -i internshipservice-postgres-1 psql -U postg ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (NOTICE:  schema...xists, skipping:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+CREATE SCHEMA
+DROP TABLE
+NOTICE:  table "customers" does not exist, skipping
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+INSERT 0 3
+                                                     QUERY PLAN                                                     
+--------------------------------------------------------------------------------------------------------------------
+ Seq Scan on customers_b2b customers  (cost=0.00..16.88 rows=3 width=118) (actual time=0.007..0.008 rows=1 loops=1)
+   Filter: ((customer_type)::text = 'B2B'::text)
+   Buffers: shared hit=1
+ Planning:
+   Buffers: shared hit=19
+ Planning Time: 0.125 ms
+ Execution Time: 0.014 ms
+(7 rows)
+
+DROP TABLE
+NOTICE:  table "user_events" does not exist, skipping
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+INSERT 0 100000
+  partition_name   | count 
+-------------------+-------
+ lab.user_events_0 | 25392
+ lab.user_events_1 | 24748
+ lab.user_events_2 | 24957
+ lab.user_events_3 | 24903
+(4 rows)
+

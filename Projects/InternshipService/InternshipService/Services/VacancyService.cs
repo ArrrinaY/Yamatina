@@ -98,6 +98,17 @@ public class VacancyService(
         }
     }
 
+    public async Task<List<VacancyResponseModel>> GetByCompanyIdAsync(int companyId)
+    {
+        if (!currentUser.UserPermissions.Contains(Permissions.Read))
+        {
+            throw new SecurityTokenException("Authorization failed");
+        }
+
+        var vacancies = await vacancyRepository.GetByCompanyIdAsync(companyId);
+        return mapper.Map<List<VacancyResponseModel>>(vacancies);
+    }
+
     public async Task<VacancyResponseModel?> GetByIdAsync(int id)
     {
         if (!currentUser.UserPermissions.Contains(Permissions.Read))

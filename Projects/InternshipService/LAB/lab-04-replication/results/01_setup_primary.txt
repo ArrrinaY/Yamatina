@@ -1,0 +1,43 @@
+﻿DO
+  rolname   | rolreplication | rolcanlogin 
+------------+----------------+-------------
+ replicator | t              | t
+(1 row)
+
+CREATE TABLE
+docker : NOTICE:  relation "applications" already exists, skipping
+строка:1 знак:259
++ ... sql" -Raw | docker exec -i internshipservice-postgres-1 psql -U postg ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (NOTICE:  relati...xists, skipping:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+NOTICE:  relation "idx_applications_candidate_id" already exists, skipping
+CREATE INDEX
+CREATE INDEX
+NOTICE:  relation "idx_applications_vacancy_id" already exists, skipping
+INSERT 0 0
+ applications_on_primary 
+-------------------------
+                    1000
+(1 row)
+
+ wal_level 
+-----------
+ replica
+(1 row)
+
+ max_wal_senders 
+-----------------
+ 10
+(1 row)
+
+ max_replication_slots 
+-----------------------
+ 10
+(1 row)
+
+ slot_name | plugin | slot_type | datoid | database | temporary | active | active_pid | xmin | catalog_xmin | restart_lsn | confirmed_flush_lsn | wal_status | safe_wal_size | two_phase | inactive_since | conflicting | invalidation_reason | failover | synced 
+-----------+--------+-----------+--------+----------+-----------+--------+------------+------+--------------+-------------+---------------------+------------+---------------+-----------+----------------+-------------+---------------------+----------+--------
+(0 rows)
+

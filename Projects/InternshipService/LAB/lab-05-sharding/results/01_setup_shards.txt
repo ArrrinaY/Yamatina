@@ -1,0 +1,29 @@
+﻿# Таблица applications создана на каждом шарде (candidate_id = shard key)
+
+=== shard0 ===
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+ database | port | shard_index | applications_table 
+----------+------+-------------+--------------------
+ postgres |      |           0 | applications
+(1 row)
+
+=== shard1 ===
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+ database | port | shard_index | applications_table 
+----------+------+-------------+--------------------
+ postgres |      |           1 | applications
+(1 row)
+
+=== shard2 ===
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+ database | port | shard_index | applications_table 
+----------+------+-------------+--------------------
+ postgres |      |           2 | applications
+(1 row)
+

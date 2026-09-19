@@ -1,0 +1,85 @@
+# Лабораторная №5: шардирование PostgreSQL.
+# Три независимых экземпляра PostgreSQL + четвёртый (пустой)
+# для эксперимента «добавление нового шарда» (3 → 4).
+# Запуск: docker compose -f LAB/lab-05-sharding/docker-compose.yml up -d
+name: lab5-sharding
+
+services:
+  shard0:
+    image: 'postgres:17.5'
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    ports:
+      - "54340:5432"
+    volumes:
+      - lab5-shard0-data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    restart: always
+
+  shard1:
+    image: 'postgres:17.5'
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    ports:
+      - "54341:5432"
+    volumes:
+      - lab5-shard1-data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    restart: always
+
+  shard2:
+    image: 'postgres:17.5'
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    ports:
+      - "54342:5432"
+    volumes:
+      - lab5-shard2-data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    restart: always
+
+  # Пустой экземпляр — используется в эксперименте 3 shards → 4 shards
+  shard3:
+    image: 'postgres:17.5'
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    ports:
+      - "54343:5432"
+    volumes:
+      - lab5-shard3-data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    restart: always
+
+volumes:
+  lab5-shard0-data:
+  lab5-shard1-data:
+  lab5-shard2-data:
+  lab5-shard3-data:

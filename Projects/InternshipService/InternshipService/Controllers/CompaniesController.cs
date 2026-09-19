@@ -35,6 +35,21 @@ public class CompaniesController(ICompanyService companyService, IValidator<Comp
         return TypedResults.NotFound();
     }
 
+    [Authorize(Policy = "CanRead")]
+    [HttpGet("{id:int}/vacancies", Name = "GetCompanyVacancies")]
+    [ProducesResponseType<List<VacancyResponseModel>>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IResult> GetVacanciesAsync([FromRoute] int id)
+    {
+        if (await companyService.GetByIdAsync(id) is null)
+        {
+            return TypedResults.NotFound();
+        }
+
+        var vacancies = await companyService.GetVacanciesAsync(id);
+        return TypedResults.Ok(vacancies);
+    }
+
     [Authorize(Policy = "CanCreate")]
     [HttpPost(Name = "CreateCompany")]
     [Consumes(MediaTypeNames.Application.Json)]

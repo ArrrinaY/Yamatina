@@ -1,0 +1,18 @@
+=== hash(key) % N и Consistent Hashing (C# router) ===
+
+--- Примеры маршрутизации (3 шарда) ---
+hash(101) =  7870873943183657792 | hash % 3 -> shard 2 | consistent -> shard 1
+hash(102) =  5344448127231650211 | hash % 3 -> shard 0 | consistent -> shard 2
+hash(103) =  3112132720264060802 | hash % 3 -> shard 2 | consistent -> shard 2
+hash(1) =   706274769219809188 | hash % 3 -> shard 1 | consistent -> shard 1
+hash(2) =  7403220990122577415 | hash % 3 -> shard 1 | consistent -> shard 1
+hash(3) =  5170905583154988006 | hash % 3 -> shard 0 | consistent -> shard 2
+
+--- Распределение 100 000 ключей (3 шарда) ---
+hash%N  shard 0 ->   33358 (33.36%)   |  consistent  shard 0 ->   10370 (10.37%)
+hash%N  shard 1 ->   33333 (33.33%)   |  consistent  shard 1 ->   40627 (40.63%)
+hash%N  shard 2 ->   33309 (33.31%)   |  consistent  shard 2 ->   49003 (49.00%)
+
+--- 3 шарда -> 4 шарда: сколько ключей переезжает ---
+hash % N           : moved   75012 из 100000 (75.01%)
+consistent hashing : moved   14444 из 100000 (14.44%)

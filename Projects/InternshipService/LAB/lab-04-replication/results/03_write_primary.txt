@@ -1,0 +1,15 @@
+﻿# Запись на Primary (INSERT)
+
+  id  | candidate_id | status 
+------+--------------+--------
+ 1001 |          777 |      1
+(1 row)
+
+INSERT 0 1
+Через 2 секунды — SELECT на Replica:
+
+  id  | candidate_id | vacancy_id | status |       cover_letter       
+------+--------------+------------+--------+--------------------------
+ 1001 |          777 |          7 |      1 | Lab4: written on primary
+(1 row)
+

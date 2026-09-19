@@ -10,7 +10,7 @@ public class Repository<T>(DbContext dbContext) : IRepository<T> where T : class
     
     public async Task<List<T>> GetAllAsync() => await _dbSet.ToListAsync();
     
-    public async ValueTask<T?> GetByIdAsync(int id) => await _dbSet.FindAsync(id);
+    public virtual async ValueTask<T?> GetByIdAsync(int id) => await _dbSet.FindAsync(id);
     
     public async Task CreateAsync(T entity)
     {
@@ -24,9 +24,9 @@ public class Repository<T>(DbContext dbContext) : IRepository<T> where T : class
         await _dbContext.SaveChangesAsync();
     }
     
-    public async Task DeleteAsync(int id)
+    public virtual async Task DeleteAsync(int id)
     {
-        var entity = await _dbSet.FindAsync(id);
+        var entity = await GetByIdAsync(id);
         if (entity != null)
         {
             _dbSet.Remove(entity);

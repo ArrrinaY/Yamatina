@@ -60,6 +60,27 @@ public class ApplicationService(
         return mapper.Map<List<ApplicationResponseModel>>(applications);
     }
 
+    public async Task<List<ApplicationResponseModel>> GetFilteredByCandidateAsync(int candidateId, ApplicationFilterModel filter)
+    {
+        if (!currentUser.UserPermissions.Contains(Permissions.Read))
+        {
+            throw new SecurityTokenException("Authorization failed");
+        }
+
+        var applications = await applicationRepository.GetFilteredAsync(candidateId, filter);
+        return mapper.Map<List<ApplicationResponseModel>>(applications);
+    }
+
+    public async Task<List<ApplicationStatisticsModel>> GetStatisticsByVacancyAsync(int vacancyId)
+    {
+        if (!currentUser.UserPermissions.Contains(Permissions.Read))
+        {
+            throw new SecurityTokenException("Authorization failed");
+        }
+
+        return await applicationRepository.GetStatisticsByVacancyAsync(vacancyId);
+    }
+
     public async Task<ApplicationResponseModel> CreateAsync(ApplicationRequestModel applicationRequestModel)
     {
         if (!currentUser.UserPermissions.Contains(Permissions.Create))
